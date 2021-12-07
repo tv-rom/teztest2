@@ -15,6 +15,29 @@ export class App {
   }
   
   
+
+  private showError(message: string) {
+    $("#balance-output").removeClass().addClass("hide");
+    $("#error-message")
+      .removeClass()
+      .addClass("show")
+      .html("Error: " + message);
+  }
+
+  private showBalance(balance: number) {
+    $("#error-message").removeClass().addClass("hide");
+    $("#balance-output").removeClass().addClass("show");
+    $("#balance").html(balance);
+  }
+
+  private getBalance(address: string) {
+    this.tk.rpc
+      .getBalance(address)
+      .then(balance => this.showBalance(balance.toNumber() / 1000000))
+      .catch(e => this.showError("Address not found"));
+  }
+}
+
 const query = `
   query collectorGallery($address: String!) {
     hic_et_nunc_token_holder(where: {holder_id: {_eq: $address}, quantity: {_gt: "0"}, token: {supply: {_gt: "0"}}}, order_by: {id: desc}) {
@@ -64,7 +87,7 @@ async function fetchGraphQL(operationsDoc, operationName, variables) {
 }
 
 async function doFetch() {
-  const { errors, data } = await fetchGraphQL(query, "collectorGallery", {"address":""});
+  const { errors, data } = await fetchGraphQL(query, "collectorGallery", address);
   if (errors) {
     console.error(errors);
   }
@@ -73,24 +96,3 @@ async function doFetch() {
   return result
 }
 
-  private showError(message: string) {
-    $("#balance-output").removeClass().addClass("hide");
-    $("#error-message")
-      .removeClass()
-      .addClass("show")
-      .html("Error: " + message);
-  }
-
-  private showBalance(balance: number) {
-    $("#error-message").removeClass().addClass("hide");
-    $("#balance-output").removeClass().addClass("show");
-    $("#balance").html(balance);
-  }
-
-  private getBalance(address: string) {
-    this.tk.rpc
-      .getBalance(address)
-      .then(balance => this.showBalance(balance.toNumber() / 1000000))
-      .catch(e => this.showError("Address not found"));
-  }
-}
